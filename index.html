@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>МСК2 обучение</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Библиотека для экспорта в Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -16,6 +18,7 @@
     <div class="tabs">
         <button class="tab-btn active" data-tab="tab1">📋 Все записи</button>
         <button class="tab-btn" data-tab="tab2">📊 Статистика</button>
+        <button class="tab-btn" data-tab="tab5">👤 Статистика сотрудников</button>
         <button class="tab-btn" data-tab="tab3">🔐 Администрирование</button>
         <button class="tab-btn" data-tab="tab4">📋 Обязательные мероприятия</button>
     </div>
@@ -89,7 +92,7 @@
     <!-- Вкладка 2 -->
     <div id="tab2" class="tab-content">
         <div class="card">
-            <h2>📊 Статистика</h2>
+            <h2>📊 Статистика по территории</h2>
             <div class="filter-row">
                 <label for="filterWine">Фильтр по винотеке:</label>
                 <select id="filterWine">
@@ -105,6 +108,34 @@
                     <div class="stat-block"><span class="stat-number" id="stPercent">0%</span><span class="stat-label">% выполнения</span></div>
                 </div>
                 <div id="statsDetail" style="margin-top:16px;font-size:15px;color:#2b5c8a;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Вкладка 5 (новая) -->
+    <div id="tab5" class="tab-content">
+        <div class="card">
+            <h2>👤 Статистика сотрудника</h2>
+            <div class="filter-row">
+                <div>
+                    <label>Винотека</label>
+                    <select id="statWineSelect">
+                        <option value="">— выберите —</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Сотрудник</label>
+                    <select id="statEmployeeSelect">
+                        <option value="">— выберите —</option>
+                    </select>
+                </div>
+                <div style="display:flex; align-items:flex-end; gap:10px;">
+                    <button class="btn" id="showStatsBtn">📊 Показать статистику</button>
+                    <button class="btn btn-outline" id="exportExcelBtn">📥 Экспорт в Excel</button>
+                </div>
+            </div>
+            <div id="employeeStatsResult" style="margin-top:20px;">
+                <p style="color:#8a9aa8;">Выберите сотрудника и нажмите «Показать статистику».</p>
             </div>
         </div>
     </div>
@@ -168,7 +199,7 @@
     </div>
 </div>
 
-<!-- Firebase SDK (compat) -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
