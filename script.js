@@ -2,7 +2,7 @@ const ADMIN_PASSWORD = 'admin123';
 let records = [];
 let isAdmin = false;
 
-// ---------- ЗАГРУЗКА ДАННЫХ ИЗ FIRESTORE ----------
+// ---------- ЗАГРУЗКА ----------
 function loadDataFromFirestore() {
     db.collection('records')
         .orderBy('rawDate', 'desc')
@@ -16,11 +16,11 @@ function loadDataFromFirestore() {
             renderAll();
         }, (error) => {
             console.error("Ошибка загрузки: ", error);
-            alert('Не удалось загрузить данные. Проверьте интернет и настройки Firebase.');
+            alert('Не удалось загрузить данные.');
         });
 }
 
-// ---------- ДОБАВЛЕНИЕ ЗАПИСИ ----------
+// ---------- ДОБАВЛЕНИЕ ----------
 function addRecord() {
     const wine = document.getElementById('wineSelect').value;
     const employee = document.getElementById('employeeSelect').value;
@@ -30,7 +30,7 @@ function addRecord() {
     const dateValue = document.getElementById('dateInput').value;
 
     if (!wine || !employee || !eventName) {
-        alert('Заполните все поля: Винотека, Сотрудник, Мероприятие');
+        alert('Заполните все поля');
         return;
     }
 
@@ -74,10 +74,10 @@ function changeStatus(index, newStatus) {
         });
 }
 
-// ---------- УДАЛЕНИЕ (только админ) ----------
+// ---------- УДАЛЕНИЕ ----------
 function deleteRecord(index) {
     if (!isAdmin) {
-        document.getElementById('adminStatus').textContent = '❌ Требуется авторизация администратора!';
+        document.getElementById('adminStatus').textContent = '❌ Требуется авторизация!';
         return;
     }
     const record = records[index];
@@ -91,7 +91,7 @@ function deleteRecord(index) {
     }
 }
 
-// ---------- ОТРИСОВКА SELECT'ОВ ----------
+// ---------- SELECT'Ы ----------
 function renderSelects() {
     const wineSelect = document.getElementById('wineSelect');
     const empSelect = document.getElementById('employeeSelect');
@@ -125,10 +125,10 @@ function renderSelects() {
         opt.textContent = w;
         filterWine.appendChild(opt);
     });
-    filterWine.addEventListener('change', updateStats);
+    filterWine.addEventListener('change', updateTerritoryStats);
 }
 
-// ---------- ОБНОВЛЕНИЕ ТАБЛИЦЫ (ГЛАВНАЯ) ----------
+// ---------- ТАБЛИЦА ----------
 function renderTable() {
     const tbody = document.getElementById('recordsBody');
     if (records.length === 0) {
@@ -173,7 +173,7 @@ function renderTable() {
     tbody.innerHTML = html;
 }
 
-// ---------- ТАБЛИЦА ДЛЯ АДМИНА ----------
+// ---------- ТАБЛИЦА АДМИНА ----------
 function renderAdminTable() {
     const tbody = document.getElementById('adminRecordsBody');
     const wrap = document.getElementById('adminTableWrap');
@@ -208,7 +208,7 @@ function renderAdminTable() {
 }
 
 // ---------- СТАТИСТИКА ПО ТЕРРИТОРИИ ----------
-function updateStats() {
+function updateTerritoryStats() {
     const filterValue = document.getElementById('filterWine').value;
     let filtered = [];
     if (filterValue === '__all') {
@@ -323,7 +323,7 @@ function renderEmployeeStats() {
     container.innerHTML = html;
 }
 
-// ---------- ЭКСПОРТ В EXCEL (ДЛЯ СОТРУДНИКА) ----------
+// ---------- ЭКСПОРТ ----------
 function exportEmployeeExcel() {
     const wine = document.getElementById('statWineSelect').value;
     const employee = document.getElementById('statEmployeeSelect').value;
@@ -352,8 +352,28 @@ function exportEmployeeExcel() {
     XLSX.writeFile(wb, `Статистика_${employee}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// ---------- ИНИЦИАЛИЗАЦИЯ ВКЛАДКИ СТАТИСТИКИ СОТРУДНИКОВ ----------
-function initEmployeeStats() {
+// ---------- ИНИЦИАЛИЗАЦИЯ СТАТИСТИКИ ----------
+function initStatsTab() {
+    const toggleBtns = document.querySelectorAll('.stat-toggle-btn');
+    const territoryView = document.getElementById('territoryView');
+    const employeeView = document.getElementById('employeeView');
+
+    toggleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            toggleBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const view = this.dataset.view;
+            if (view === 'territory') {
+                territoryView.classList.add('active');
+                employeeView.classList.remove('active');
+            } else {
+                employeeView.classList.add('active');
+                territoryView.classList.remove('active');
+            }
+        });
+    });
+
     const wineSelect = document.getElementById('statWineSelect');
     const empSelect = document.getElementById('statEmployeeSelect');
 
@@ -376,19 +396,19 @@ function initEmployeeStats() {
                 empSelect.appendChild(opt);
             });
         }
-        document.getElementById('employeeStatsResult').innerHTML = '<p style="color:var(--text-secondary);">Выберите сотрудника и нажмите «Показать статистику».</p>';
+        document.getElementById('employeeStatsResult').innerHTML = '<p style="color:var(--text-secondary);">Выберите сотрудника и нажмите «Показать».</p>';
     });
 
     document.getElementById('showStatsBtn').addEventListener('click', renderEmployeeStats);
     document.getElementById('exportExcelBtn').addEventListener('click', exportEmployeeExcel);
 }
 
-// ---------- АДМИНИСТРИРОВАНИЕ ----------
+// ---------- АДМИН ----------
 function adminLogin() {
     const pass = document.getElementById('adminPass').value;
     if (pass === ADMIN_PASSWORD) {
         isAdmin = true;
-        document.getElementById('adminStatus').textContent = '✅ Режим администратора активен. Можно удалять записи.';
+        document.getElementById('adminStatus').textContent = '✅ Режим администратора активен.';
         document.getElementById('adminStatus').style.color = '#2d6a2d';
         document.getElementById('adminLoginBtn').style.display = 'none';
         document.getElementById('adminLogoutBtn').style.display = 'inline-block';
@@ -407,7 +427,7 @@ function adminLogout() {
     document.getElementById('adminTableWrap').style.display = 'none';
 }
 
-// ---------- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ----------
+// ---------- ВКЛАДКИ ----------
 function initTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
     const contents = document.querySelectorAll('.tab-content');
@@ -423,21 +443,12 @@ function initTabs() {
     });
 }
 
-// ---------- ОБЩАЯ ПЕРЕРИСОВКА ----------
-function renderAll() {
-    renderTable();
-    renderAdminTable();
-    updateStats();
-    renderRequiredTable();
-}
-
-// ---------- ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ ----------
+// ---------- ТЕМА ----------
 function initTheme() {
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
     const themeLabel = document.getElementById('themeLabel');
 
-    // Проверяем сохранённую тему
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-theme');
         themeIcon.textContent = '☀️';
@@ -453,12 +464,20 @@ function initTheme() {
     });
 }
 
+// ---------- ОБНОВЛЕНИЕ ----------
+function renderAll() {
+    renderTable();
+    renderAdminTable();
+    updateTerritoryStats();
+    renderRequiredTable();
+}
+
 // ---------- ЗАПУСК ----------
 document.addEventListener('DOMContentLoaded', function() {
     renderSelects();
     initTabs();
-    initEmployeeStats();
-    initTheme(); // <-- добавлено
+    initStatsTab();
+    initTheme();
     document.getElementById('filterWine').value = '__all';
     loadDataFromFirestore();
 
