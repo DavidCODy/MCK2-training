@@ -100,6 +100,16 @@ header .subtitle {
     border-radius: 4px;
 }
 
+/* ===== ЭТОТ БЛОК ОТВЕЧАЕТ ЗА РАБОТУ ВКЛАДОК ===== */
+.tab-content {
+    display: none;  /* все вкладки скрыты по умолчанию */
+}
+
+.tab-content.active {
+    display: block; /* только активная — видна */
+}
+/* ============================================= */
+
 /* ===== CARDS ===== */
 .card {
     background: var(--card-bg);
@@ -397,7 +407,6 @@ tr:hover td {
     font-weight: 600;
 }
 
-/* Мелкие анимации для карточек и кнопок */
 .btn, .tab-btn, .stat-block, .card {
     will-change: transform;
 }
