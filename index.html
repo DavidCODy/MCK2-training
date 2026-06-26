@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>МСК2 обучение</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div>
+            <h1>📚 МСК2 обучение</h1>
+            <p class="subtitle">Учёт участия в дегустациях, тренингах и аттестациях · 100% прохождение для аттестации</p>
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
+            <span id="themeIcon">🌙</span>
+            <span class="toggle-label" id="themeLabel">Тёмная</span>
+        </button>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="tab1" title="Все записи">📋</button>
+        <button class="tab-btn" data-tab="tab2" title="Статистика">📊</button>
+        <button class="tab-btn" data-tab="tab3" title="Администрирование">🔐</button>
+        <button class="tab-btn" data-tab="tab4" title="Обязательные мероприятия">📋</button>
+    </div>
+
+    <!-- Вкладка 1 -->
+    <div id="tab1" class="tab-content active">
+        <div class="card">
+            <h2>➕ Добавить участие</h2>
+            <div class="form-grid">
+                <div>
+                    <label>Винотека</label>
+                    <select id="wineSelect"><option value="">— выберите —</option></select>
+                </div>
+                <div>
+                    <label>Сотрудник</label>
+                    <select id="employeeSelect"><option value="">— выберите —</option></select>
+                </div>
+                <div>
+                    <label>Мероприятие</label>
+                    <input type="text" id="eventInput" placeholder="Например: Дегустация Bordeaux">
+                </div>
+                <div>
+                    <label>Тип</label>
+                    <select id="typeSelect">
+                        <option value="Дегустация">Дегустация</option>
+                        <option value="Тренинг по продажам">Тренинг по продажам</option>
+                        <option value="Онлайн-курс">Онлайн-курс</option>
+                        <option value="Аттестация">Аттестация</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Статус</label>
+                    <select id="statusSelect">
+                        <option value="Пройдено">✅ Пройдено</option>
+                        <option value="Запланировано">📅 Запланировано</option>
+                        <option value="Пропущено">❌ Пропущено</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Дата мероприятия</label>
+                    <input type="date" id="dateInput">
+                </div>
+            </div>
+            <button class="btn" id="addBtn">➕ Добавить запись</button>
+        </div>
+
+        <div class="card">
+            <h2>📋 Все записи</h2>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Винотека</th>
+                            <th>Сотрудник</th>
+                            <th>Мероприятие</th>
+                            <th>Тип</th>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                            <th>Обязательное</th>
+                            <th>Изменить статус</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsBody">
+                        <tr><td colspan="8" class="text-center">Загрузка...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Вкладка 2 -->
+    <div id="tab2" class="tab-content">
+        <div class="card">
+            <h2>📊 Статистика</h2>
+            <div class="stat-toggle">
+                <button class="stat-toggle-btn active" data-view="territory">🌐 По территории</button>
+                <button class="stat-toggle-btn" data-view="employee">👤 По сотруднику</button>
+            </div>
+
+            <!-- По территории -->
+            <div id="territoryView" class="stat-view active">
+                <div class="filter-row">
+                    <label for="filterWine">Фильтр по винотеке:</label>
+                    <select id="filterWine">
+                        <option value="__all">🌐 Все винотеки (территория)</option>
+                    </select>
+                </div>
+                <div class="stat-grid" id="statsCards">
+                    <div class="stat-block"><span class="stat-number" id="stTotal">0</span><span class="stat-label">Всего записей</span></div>
+                    <div class="stat-block"><span class="stat-number" id="stDone">0</span><span class="stat-label">Пройдено</span></div>
+                    <div class="stat-block"><span class="stat-number" id="stPlanned">0</span><span class="stat-label">Запланировано</span></div>
+                    <div class="stat-block"><span class="stat-number" id="stMissed">0</span><span class="stat-label">Пропущено</span></div>
+                    <div class="stat-block"><span class="stat-number" id="stPercent">0%</span><span class="stat-label">% выполнения</span></div>
+                </div>
+                <div id="statsDetail" style="margin-top:16px;font-size:15px;"></div>
+            </div>
+
+            <!-- По сотруднику -->
+            <div id="employeeView" class="stat-view">
+                <div class="filter-row">
+                    <div>
+                        <label>Винотека</label>
+                        <select id="statWineSelect">
+                            <option value="">— выберите —</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Сотрудник</label>
+                        <select id="statEmployeeSelect">
+                            <option value="">— выберите —</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; align-items:flex-end; gap:10px;">
+                        <button class="btn" id="showStatsBtn">📊 Показать</button>
+                        <button class="btn btn-outline" id="exportExcelBtn">📥 Экспорт</button>
+                    </div>
+                </div>
+                <div id="employeeStatsResult" style="margin-top:20px;">
+                    <p style="color:var(--text-secondary);">Выберите сотрудника и нажмите «Показать».</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Вкладка 3 -->
+    <div id="tab3" class="tab-content">
+        <div class="card">
+            <h2>🔐 Администрирование</h2>
+            <p>Введите пароль для удаления записей:</p>
+            <div class="flex">
+                <input type="password" id="adminPass" placeholder="Пароль администратора" style="width:250px;">
+                <button class="btn btn-outline" id="adminLoginBtn">Войти</button>
+                <button class="btn btn-outline" id="adminLogoutBtn" style="display:none;">Выйти</button>
+            </div>
+            <div id="adminStatus"></div>
+            <div id="adminTableWrap" style="margin-top:20px;display:none;">
+                <h3 style="margin-bottom:10px;">Управление записями</h3>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Винотека</th>
+                                <th>Сотрудник</th>
+                                <th>Мероприятие</th>
+                                <th>Тип</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                                <th>Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminRecordsBody">
+                            <tr><td colspan="7" class="text-center">Нет записей</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Вкладка 4 -->
+    <div id="tab4" class="tab-content">
+        <div class="card">
+            <h2>📋 Обязательные мероприятия для аттестации</h2>
+            <p style="margin-bottom:16px;">Список мероприятий, необходимых для прохождения ежегодной аттестации (грейды 3 и 4).</p>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Мероприятие</th>
+                            <th>Грейд</th>
+                            <th>Всего прошли</th>
+                            <th>% выполнения</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requiredTableBody">
+                        <tr><td colspan="4" class="text-center">Нет данных</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAKy4nEfNy-gqRQLmLNwk4XrJcXoJ7Ek14",
+        authDomain: "msk2train.firebaseapp.com",
+        projectId: "msk2train",
+        storageBucket: "msk2train.firebasestorage.app",
+        messagingSenderId: "1015119500051",
+        appId: "1:1015119500051:web:3efb3c64dc4e2f4ec380e6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+</script>
+
+<script src="employees.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
