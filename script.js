@@ -207,7 +207,7 @@ function renderAdminTable() {
     tbody.innerHTML = html;
 }
 
-// ---------- СТАТИСТИКА ----------
+// ---------- СТАТИСТИКА ПО ТЕРРИТОРИИ ----------
 function updateStats() {
     const filterValue = document.getElementById('filterWine').value;
     let filtered = [];
@@ -269,6 +269,120 @@ function renderRequiredTable() {
     tbody.innerHTML = html;
 }
 
+// ---------- СТАТИСТИКА ПО СОТРУДНИКУ (НОВАЯ) ----------
+function renderEmployeeStats() {
+    const wine = document.getElementById('statWineSelect').value;
+    const employee = document.getElementById('statEmployeeSelect').value;
+    const container = document.getElementById('employeeStatsResult');
+
+    if (!wine || !employee) {
+        container.innerHTML = '<p style="color:#8a9aa8;">Выберите винотеку и сотрудника.</p>';
+        return;
+    }
+
+    const empRecords = records.filter(r => r.wine === wine && r.employee === employee);
+    if (empRecords.length === 0) {
+        container.innerHTML = `<p>Для сотрудника <strong>${employee}</strong> пока нет записей.</p>`;
+        return;
+    }
+
+    const total = empRecords.length;
+    const done = empRecords.filter(r => r.status === 'Пройдено').length;
+    const planned = empRecords.filter(r => r.status === 'Запланировано').length;
+    const missed = empRecords.filter(r => r.status === 'Пропущено').length;
+    const percent = total === 0 ? 0 : Math.round((done / total) * 100);
+
+    let html = `
+        <div class="stat-grid">
+            <div class="stat-block"><span class="stat-number">${total}</span><span class="stat-label">Всего записей</span></div>
+            <div class="stat-block"><span class="stat-number">${done}</span><span class="stat-label">Пройдено</span></div>
+            <div class="stat-block"><span class="stat-number">${planned}</span><span class="stat-label">Запланировано</span></div>
+            <div class="stat-block"><span class="stat-number">${missed}</span><span class="stat-label">Пропущено</span></div>
+            <div class="stat-block"><span class="stat-number">${percent}%</span><span class="stat-label">% выполнения</span></div>
+        </div>
+        <h3 style="margin:20px 0 10px;">Обязательные мероприятия</h3>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead><tr><th>Мероприятие</th><th>Грейд</th><th>Статус</th></tr></thead>
+                <tbody>
+    `;
+    REQUIRED_EVENTS.forEach(ev => {
+        const rec = empRecords.find(r => r.event === ev.name);
+        const status = rec ? rec.status : 'Нет записи';
+        let badge = 'badge-gray';
+        if (status === 'Пройдено') badge = 'badge-green';
+        else if (status === 'Пропущено') badge = 'badge-red';
+        html += `<tr>
+            <td>${ev.name}</td>
+            <td><span class="badge ${ev.grade === 3 ? 'badge-green' : 'badge-red'}">Грейд ${ev.grade}</span></td>
+            <td><span class="badge ${badge}">${status}</span></td>
+        </tr>`;
+    });
+    html += `</tbody></table></div>`;
+
+    container.innerHTML = html;
+}
+
+// ---------- ЭКСПОРТ В EXCEL (ДЛЯ СОТРУДНИКА) ----------
+function exportEmployeeExcel() {
+    const wine = document.getElementById('statWineSelect').value;
+    const employee = document.getElementById('statEmployeeSelect').value;
+    if (!wine || !employee) {
+        alert('Сначала выберите винотеку и сотрудника.');
+        return;
+    }
+    const empRecords = records.filter(r => r.wine === wine && r.employee === employee);
+    if (empRecords.length === 0) {
+        alert('У этого сотрудника нет записей.');
+        return;
+    }
+
+    const data = empRecords.map(r => ({
+        'Винотека': r.wine,
+        'Сотрудник': r.employee,
+        'Мероприятие': r.event,
+        'Тип': r.type,
+        'Статус': r.status,
+        'Дата': r.date
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, 'Записи');
+    XLSX.writeFile(wb, `Статистика_${employee}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// ---------- ИНИЦИАЛИЗАЦИЯ ВКЛАДКИ СТАТИСТИКИ СОТРУДНИКОВ ----------
+function initEmployeeStats() {
+    const wineSelect = document.getElementById('statWineSelect');
+    const empSelect = document.getElementById('statEmployeeSelect');
+
+    wineSelect.innerHTML = '<option value="">— выберите —</option>';
+    WINERIES.forEach(w => {
+        const opt = document.createElement('option');
+        opt.value = w;
+        opt.textContent = w;
+        wineSelect.appendChild(opt);
+    });
+
+    wineSelect.addEventListener('change', function() {
+        const selectedWine = this.value;
+        empSelect.innerHTML = '<option value="">— выберите —</option>';
+        if (selectedWine && EMPLOYEES[selectedWine]) {
+            EMPLOYEES[selectedWine].forEach(emp => {
+                const opt = document.createElement('option');
+                opt.value = emp;
+                opt.textContent = emp;
+                empSelect.appendChild(opt);
+            });
+        }
+        document.getElementById('employeeStatsResult').innerHTML = '<p style="color:#8a9aa8;">Выберите сотрудника и нажмите «Показать статистику».</p>';
+    });
+
+    document.getElementById('showStatsBtn').addEventListener('click', renderEmployeeStats);
+    document.getElementById('exportExcelBtn').addEventListener('click', exportEmployeeExcel);
+}
+
 // ---------- АДМИНИСТРИРОВАНИЕ ----------
 function adminLogin() {
     const pass = document.getElementById('adminPass').value;
@@ -321,6 +435,7 @@ function renderAll() {
 document.addEventListener('DOMContentLoaded', function() {
     renderSelects();
     initTabs();
+    initEmployeeStats(); // <-- инициализация новой вкладки
     document.getElementById('filterWine').value = '__all';
     loadDataFromFirestore();
 
