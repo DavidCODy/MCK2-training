@@ -447,3 +447,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') addRecord();
     });
 });
+// Переключение темы
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+const themeLabel = document.getElementById('themeLabel');
+
+// Проверка сохранённой темы
+if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-theme');
+    themeIcon.textContent = '☀️';
+    themeLabel.textContent = 'Светлая';
+}
+
+themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-theme');
+    const isDark = document.body.classList.contains('dark-theme');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    themeIcon.textContent = isDark ? '☀️' : '🌙';
+    themeLabel.textContent = isDark ? 'Светлая' : 'Тёмная';
+});
