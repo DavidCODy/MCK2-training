@@ -58,6 +58,9 @@ header {
 header h1 {
     font-size: 28px;
     font-weight: 600;
+}
+
+header h1 .gradient-text {
     background: linear-gradient(135deg, var(--primary), var(--primary-light));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
