@@ -269,14 +269,14 @@ function renderRequiredTable() {
     tbody.innerHTML = html;
 }
 
-// ---------- СТАТИСТИКА ПО СОТРУДНИКУ (НОВАЯ) ----------
+// ---------- СТАТИСТИКА ПО СОТРУДНИКУ ----------
 function renderEmployeeStats() {
     const wine = document.getElementById('statWineSelect').value;
     const employee = document.getElementById('statEmployeeSelect').value;
     const container = document.getElementById('employeeStatsResult');
 
     if (!wine || !employee) {
-        container.innerHTML = '<p style="color:#8a9aa8;">Выберите винотеку и сотрудника.</p>';
+        container.innerHTML = '<p style="color:var(--text-secondary);">Выберите винотеку и сотрудника.</p>';
         return;
     }
 
@@ -376,7 +376,7 @@ function initEmployeeStats() {
                 empSelect.appendChild(opt);
             });
         }
-        document.getElementById('employeeStatsResult').innerHTML = '<p style="color:#8a9aa8;">Выберите сотрудника и нажмите «Показать статистику».</p>';
+        document.getElementById('employeeStatsResult').innerHTML = '<p style="color:var(--text-secondary);">Выберите сотрудника и нажмите «Показать статистику».</p>';
     });
 
     document.getElementById('showStatsBtn').addEventListener('click', renderEmployeeStats);
@@ -431,11 +431,34 @@ function renderAll() {
     renderRequiredTable();
 }
 
+// ---------- ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ ----------
+function initTheme() {
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const themeLabel = document.getElementById('themeLabel');
+
+    // Проверяем сохранённую тему
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-theme');
+        themeIcon.textContent = '☀️';
+        themeLabel.textContent = 'Светлая';
+    }
+
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-theme');
+        const isDark = document.body.classList.contains('dark-theme');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        themeIcon.textContent = isDark ? '☀️' : '🌙';
+        themeLabel.textContent = isDark ? 'Светлая' : 'Тёмная';
+    });
+}
+
 // ---------- ЗАПУСК ----------
 document.addEventListener('DOMContentLoaded', function() {
     renderSelects();
     initTabs();
-    initEmployeeStats(); // <-- инициализация новой вкладки
+    initEmployeeStats();
+    initTheme(); // <-- добавлено
     document.getElementById('filterWine').value = '__all';
     loadDataFromFirestore();
 
@@ -446,23 +469,4 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('eventInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') addRecord();
     });
-});
-// Переключение темы
-const themeToggle = document.getElementById('themeToggle');
-const themeIcon = document.getElementById('themeIcon');
-const themeLabel = document.getElementById('themeLabel');
-
-// Проверка сохранённой темы
-if (localStorage.getItem('theme') === 'dark') {
-    document.body.classList.add('dark-theme');
-    themeIcon.textContent = '☀️';
-    themeLabel.textContent = 'Светлая';
-}
-
-themeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark-theme');
-    const isDark = document.body.classList.contains('dark-theme');
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    themeIcon.textContent = isDark ? '☀️' : '🌙';
-    themeLabel.textContent = isDark ? 'Светлая' : 'Тёмная';
 });
